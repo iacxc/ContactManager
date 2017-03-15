@@ -55,27 +55,30 @@ WHERE Id=@Id";
             }
 
             m_db.Open();
-            var command = new SQLiteCommand(sqlstr, m_db);
+            using (var cmd = m_db.CreateCommand())
+            {
+                cmd.CommandText = sqlstr;
 
-            command.Parameters.Add(new SQLiteParameter("@Id", contact.Id.ToString()));
-            command.Parameters.Add(new SQLiteParameter("@FirstName", contact.FirstName));
-            command.Parameters.Add(new SQLiteParameter("@LastName", contact.LastName));
-            command.Parameters.Add(new SQLiteParameter("@ImagePath", contact.ImagePath));
-            command.Parameters.Add(new SQLiteParameter("@Organization", contact.Organization));
-            command.Parameters.Add(new SQLiteParameter("@JobTitle", contact.JobTitle));
-            command.Parameters.Add(new SQLiteParameter("@CellPhone", contact.CellPhone));
-            command.Parameters.Add(new SQLiteParameter("@HomePhone", contact.HomePhone));
-            command.Parameters.Add(new SQLiteParameter("@OfficePhone", contact.OfficePhone));
-            command.Parameters.Add(new SQLiteParameter("@PrimaryEmail", contact.PrimaryEmail));
-            command.Parameters.Add(new SQLiteParameter("@SecondaryEmail", contact.SecondaryEmail));
-            command.Parameters.Add(new SQLiteParameter("@City", address.City));
-            command.Parameters.Add(new SQLiteParameter("@Country", address.Country));
-            command.Parameters.Add(new SQLiteParameter("@Line1", address.Line1));
-            command.Parameters.Add(new SQLiteParameter("@Line2", address.Line2));
-            command.Parameters.Add(new SQLiteParameter("@State", address.State));
-            command.Parameters.Add(new SQLiteParameter("@Zip", address.Zip));
+                cmd.Parameters.AddWithValue("@Id", contact.Id.ToString());
+                cmd.Parameters.AddWithValue("@FirstName", contact.FirstName);
+                cmd.Parameters.AddWithValue("@LastName", contact.LastName);
+                cmd.Parameters.AddWithValue("@ImagePath", contact.ImagePath);
+                cmd.Parameters.AddWithValue("@Organization", contact.Organization);
+                cmd.Parameters.AddWithValue("@JobTitle", contact.JobTitle);
+                cmd.Parameters.AddWithValue("@CellPhone", contact.CellPhone);
+                cmd.Parameters.AddWithValue("@HomePhone", contact.HomePhone);
+                cmd.Parameters.AddWithValue("@OfficePhone", contact.OfficePhone);
+                cmd.Parameters.AddWithValue("@PrimaryEmail", contact.PrimaryEmail);
+                cmd.Parameters.AddWithValue("@SecondaryEmail", contact.SecondaryEmail);
+                cmd.Parameters.AddWithValue("@City", address.City);
+                cmd.Parameters.AddWithValue("@Country", address.Country);
+                cmd.Parameters.AddWithValue("@Line1", address.Line1);
+                cmd.Parameters.AddWithValue("@Line2", address.Line2);
+                cmd.Parameters.AddWithValue("@State", address.State);
+                cmd.Parameters.AddWithValue("@Zip", address.Zip);
 
-            command.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
             m_db.Close();
         }
 
@@ -83,11 +86,13 @@ WHERE Id=@Id";
         {
             m_contactStore.Remove(contact);
 
-            var sqlstr = string.Format("DELETE FROM T_Contacts WHERE id=@Id");
             m_db.Open();
-            var command = new SQLiteCommand(sqlstr, m_db);
-            command.Parameters.Add(new SQLiteParameter("@Id", contact.Id.ToString()));
-            command.ExecuteNonQuery();
+            using (var cmd = m_db.CreateCommand())
+            {
+                cmd.CommandText = "DELETE FROM T_Contacts WHERE id=@Id";
+                cmd.Parameters.AddWithValue("@Id", contact.Id.ToString());
+                cmd.ExecuteNonQuery();
+            }
             m_db.Close();
         }
 
@@ -115,35 +120,38 @@ WHERE Id=@Id";
         , City, Country, Line1 , Line2, State, Zip
   FROM T_Contacts";
             m_db.Open();
-            var command = new SQLiteCommand(qrystr, m_db);
-            var reader = command.ExecuteReader();
-
-            m_contactStore = new List<Contact>();
-            while (reader.Read())
+            using (var cmd = m_db.CreateCommand())
             {
-                m_contactStore.Add(new Contact()
+                cmd.CommandText = qrystr;
+                var reader = cmd.ExecuteReader();
+
+                m_contactStore = new List<Contact>();
+                while (reader.Read())
                 {
-                    Id = new Guid(reader["id"].ToString()),
-                    FirstName = reader["FirstName"].ToString(),
-                    LastName = reader["LastName"].ToString(),
-                    ImagePath = reader["ImagePath"].ToString(),
-                    Organization = reader["Organization"].ToString(),
-                    JobTitle = reader["JobTitle"].ToString(),
-                    CellPhone = reader["CellPhone"].ToString(),
-                    HomePhone = reader["HomePhone"].ToString(),
-                    OfficePhone = reader["OfficePhone"].ToString(),
-                    PrimaryEmail = reader["PrimaryEmail"].ToString(),
-                    SecondaryEmail = reader["SecondaryEmail"].ToString(),
-                    Address = new Address()
+                    m_contactStore.Add(new Contact()
                     {
-                        City = reader["City"].ToString(),
-                        Country = reader["Country"].ToString(),
-                        Line1 = reader["Line1"].ToString(),
-                        Line2 = reader["Line2"].ToString(),
-                        State = reader["State"].ToString(),
-                        Zip = reader["Zip"].ToString()
-                    }
-                });
+                        Id = new Guid(reader["id"].ToString()),
+                        FirstName = reader["FirstName"].ToString(),
+                        LastName = reader["LastName"].ToString(),
+                        ImagePath = reader["ImagePath"].ToString(),
+                        Organization = reader["Organization"].ToString(),
+                        JobTitle = reader["JobTitle"].ToString(),
+                        CellPhone = reader["CellPhone"].ToString(),
+                        HomePhone = reader["HomePhone"].ToString(),
+                        OfficePhone = reader["OfficePhone"].ToString(),
+                        PrimaryEmail = reader["PrimaryEmail"].ToString(),
+                        SecondaryEmail = reader["SecondaryEmail"].ToString(),
+                        Address = new Address()
+                        {
+                            City = reader["City"].ToString(),
+                            Country = reader["Country"].ToString(),
+                            Line1 = reader["Line1"].ToString(),
+                            Line2 = reader["Line2"].ToString(),
+                            State = reader["State"].ToString(),
+                            Zip = reader["Zip"].ToString()
+                        }
+                    });
+                }
             }
             m_db.Close();
         }
